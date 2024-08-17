@@ -9,7 +9,7 @@ exports.handler = async function(event, context) {
     let data = cache.get(cacheKey);
 
     if (data === undefined){
-        const response = await axios.get('https://docs.google.com/spreadsheets/d/10YZra-FKNCClwlBpGJ8w-O_nikQ3GmMnlzlWcxi-1rg/pub?gid=1076834980&single=true&output=csv');
+        const response = await axios.get(process.env.GOOGLE_SHEET_CSV_URL);
         data = response.data;
         cache.set(cacheKey, data);
     }

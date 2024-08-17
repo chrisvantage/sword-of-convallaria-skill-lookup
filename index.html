@@ -95,8 +95,9 @@
     </div>
 
     <script>
-        const API_ENDPOINT = '/.netlify/functions/fetchSkills';
+        const API_ENDPOINT = location.hostname === "localhost" ? '/.netlify/functions/fetchSkills' : '/api/fetchSkills';
         let skills = [];
+        const BATCH_SIZE = 50;
 
         const searchInput = document.getElementById('searchInput');
         const skillList = document.getElementById('skillList');
@@ -155,7 +156,7 @@
             }
         }
 
-        function displaySkills(filteredSkills, append = false) {
+        function displaySkills(skillsToDisplay, append = false) {
             if(!append) {
                 skillList.innerHTML = '';
             }
@@ -181,13 +182,24 @@
                 readMoreLink.className = 'text-primary-600 dark:text-primary-400 hover:underline';
                 readMoreLink.textContent = 'Read more';
                 readMoreLink.href = '#';
+                skillElement.appendChild(readMoreLink);
+
+                // make the entire skill element clickable
+                skillElement.onclick = (e) => {
+                    if (e.target !== readMoreLink) {
+                        displaySkillDetails(skill);
+                        skillList.classList.add('hidden');
+                        searchInput.value = '';
+                    }
+                };
+
+                // prevent the click on the "read more" link from triggering the skillElement click
                 readMoreLink.onclick = (e) => {
-                    e.preventDefault();
+                    e.stopPropagation();
                     displaySkillDetails(skill);
                     skillList.classList.add('hidden');
                     searchInput.value = '';
                 };
-                skillElement.appendChild(readMoreLink);
 
                 skillList.insertBefore(skillElement, skillList.lastChild);
             });
