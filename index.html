@@ -96,7 +96,6 @@
 
     <script>
         const API_ENDPOINT = '/.netlify/functions/fetchSkills';
-
         let skills = [];
 
         const searchInput = document.getElementById('searchInput');
@@ -109,8 +108,28 @@
         async function fetchSkillsFromGoogleSheets() {
             loadingIndicator.classList.remove('hidden');
             errorMessage.classList.add('hidden');
+            
             try {
+                // check localstorage first
+                const cachedData = localStorage.getItem('skillsData');
+                const cachedTimestamp = localStorage.getItem('skillsDataTimestamp');
+
+                if (cachedData && cachedTimestamp) {
+                    const now = new Date().getTime();
+                    const cacheAge = now - parseInt(cachedTimestamp);
+
+                    // use cache is it's less than 1 hour old
+                    if (cacheAge < 3600000) {
+                        skills = JSON.parse(cachedData);
+                        loadingIndicator.classList.add('hidden');
+                        return;
+                    }
+                }
+                
                 const response = await fetch(API_ENDPOINT);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
                 const csvData = await response.text();
                 
                 Papa.parse(csvData, {
@@ -122,6 +141,10 @@
                             units: row.unit_global.split(',').map(unit => unit.trim())
                         }));
                         loadingIndicator.classList.add('hidden');
+                    },
+                    error: (error) => {
+                        console.error('Papa Parse error:', error);
+                        throw error;
                     }
                 });
             } catch (error) {
