@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sword of Convallaria Skill Lookup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {"50":"#eff6ff","100":"#dbeafe","200":"#bfdbfe","300":"#93c5fd","400":"#60a5fa","500":"#3b82f6","600":"#2563eb","700":"#1d4ed8","800":"#1e40af","900":"#1e3a8a","950":"#172554"}
+                    }
+                },
+                fontFamily: {
+                    'body': [
+                        'Inter', 
+                        'ui-sans-serif', 
+                        'system-ui', 
+                        '-apple-system', 
+                        'system-ui', 
+                        'Segoe UI', 
+                        'Roboto', 
+                        'Helvetica Neue', 
+                        'Arial', 
+                        'Noto Sans', 
+                        'sans-serif', 
+                        'Apple Color Emoji', 
+                        'Segoe UI Emoji', 
+                        'Segoe UI Symbol', 
+                        'Noto Color Emoji'
+                    ],
+                    'sans': [
+                        'Inter', 
+                        'ui-sans-serif', 
+                        'system-ui', 
+                        '-apple-system', 
+                        'system-ui', 
+                        'Segoe UI', 
+                        'Roboto', 
+                        'Helvetica Neue', 
+                        'Arial', 
+                        'Noto Sans', 
+                        'sans-serif', 
+                        'Apple Color Emoji', 
+                        'Segoe UI Emoji', 
+                        'Segoe UI Symbol', 
+                        'Noto Color Emoji'
+                    ]
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300 font-body">
+    <div class="container mx-auto p-4 sm:p-8">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-primary-600 dark:text-primary-400">Sword of Convallaria Skill Lookup</h1>
+            <button id="darkModeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-600 dark:focus:ring-primary-400">
+                <svg class="w-6 h-6 text-gray-800 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                </svg>
+            </button>
+        </div>
+        <div class="mb-6">
+            <input type="text" id="searchInput" placeholder="Start typing to search for a skill..." class="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-600 dark:focus:ring-primary-400 focus:border-transparent">
+        </div>
+        <div id="skillList" class="space-y-2 mb-6 hidden"></div>
+        <div id="skillDetails" class="hidden p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md"></div>
+        <div id="loadingIndicator" class="text-center py-4 hidden">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600 dark:border-primary-400"></div>
+            <span class="ml-2">Loading skills...</span>
+        </div>
+        <div id="errorMessage" class="text-center py-4 text-red-600 dark:text-red-400 hidden"></div>
+    </div>
+
+    <script>
+        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/10YZra-FKNCClwlBpGJ8w-O_nikQ3GmMnlzlWcxi-1rg/pub?output=csv';
+        const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
+
+        let skills = [];
+
+        const searchInput = document.getElementById('searchInput');
+        const skillList = document.getElementById('skillList');
+        const skillDetails = document.getElementById('skillDetails');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorMessage = document.getElementById('errorMessage');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+
+        async function fetchSkillsFromGoogleSheets() {
+            loadingIndicator.classList.remove('hidden');
+            errorMessage.classList.add('hidden');
+            try {
+                const response = await fetch(CORS_PROXY + GOOGLE_SHEET_CSV_URL);
+                const csvData = await response.text();
+                
+                Papa.parse(csvData, {
+                    header: true,
+                    complete: (results) => {
+                        skills = results.data.map(row => ({
+                            name: row.name_global,
+                            description: row.desc_global,
+                            units: row.unit_global.split(',').map(unit => unit.trim())
+                        }));
+                        loadingIndicator.classList.add('hidden');
+                    }
+                });
+            } catch (error) {
+                console.error('Error fetching skills:', error);
+                loadingIndicator.classList.add('hidden');
+                errorMessage.textContent = 'Failed to load skills. Please try again later.';
+                errorMessage.classList.remove('hidden');
+            }
+        }
+
+        function displaySkills(filteredSkills) {
+            skillList.innerHTML = '';
+            if (filteredSkills.length > 0) {
+                skillList.classList.remove('hidden');
+                filteredSkills.forEach(skill => {
+                    const skillElement = document.createElement('div');
+                    skillElement.className = 'p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200';
+                    skillElement.textContent = skill.name;
+                    skillElement.onclick = () => {
+                        displaySkillDetails(skill);
+                        skillList.classList.add('hidden');
+                        searchInput.value = '';
+                    };
+                    skillList.appendChild(skillElement);
+                });
+            } else {
+                skillList.classList.add('hidden');
+            }
+        }
+
+        function displaySkillDetails(skill) {
+            skillDetails.innerHTML = `
+                <button id="backToSearch" class="mb-4 text-primary-600 dark:text-primary-400 hover:underline">← Back to search</button>
+                <h2 class="text-2xl font-bold mb-3 text-primary-600 dark:text-primary-400">${skill.name}</h2>
+                ${skill.description ? `<p class="mb-4 text-gray-700 dark:text-gray-300">${skill.description}</p>` : ''}
+                <h3 class="text-xl font-semibold mb-2 text-gray-800 dark:text-gray-200">Units that can learn this skill:</h3>
+                <ul class="list-disc pl-5 text-gray-700 dark:text-gray-300">
+                    ${skill.units.map(unit => `<li>${unit}</li>`).join('')}
+                </ul>
+            `;
+            skillDetails.classList.remove('hidden');
+
+            document.getElementById('backToSearch').addEventListener('click', () => {
+                skillDetails.classList.add('hidden');
+                searchInput.focus();
+            });
+        }
+
+        function normalizeString(str) {
+            return str.toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = normalizeString(e.target.value);
+            if (searchTerm.length > 0) {
+                const filteredSkills = skills.filter(skill => 
+                    normalizeString(skill.name).includes(searchTerm) || 
+                    normalizeString(skill.description).includes(searchTerm) ||
+                    skill.units.some(unit => normalizeString(unit).includes(searchTerm))
+                );
+                displaySkills(filteredSkills);
+                skillDetails.classList.add('hidden');
+            } else {
+                skillList.classList.add('hidden');
+                skillDetails.classList.add('hidden');
+            }
+        });
+
+        darkModeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+        });
+
+        // Fetch skills from Google Sheets when the page loads
+        fetchSkillsFromGoogleSheets();
+    </script>
+</body>
+</html>
