@@ -95,8 +95,7 @@
     </div>
 
     <script>
-        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/10YZra-FKNCClwlBpGJ8w-O_nikQ3GmMnlzlWcxi-1rg/pub?output=csv';
-        const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
+        const API_ENDPOINT = '/.netlify/functions/fetchSkills';
 
         let skills = [];
 
@@ -111,7 +110,7 @@
             loadingIndicator.classList.remove('hidden');
             errorMessage.classList.add('hidden');
             try {
-                const response = await fetch(CORS_PROXY + GOOGLE_SHEET_CSV_URL);
+                const response = await fetch(API_ENDPOINT);
                 const csvData = await response.text();
                 
                 Papa.parse(csvData, {
