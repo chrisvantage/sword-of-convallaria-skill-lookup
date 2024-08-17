@@ -80,7 +80,7 @@
             </button>
         </div>
         <div class="flex justify-between items-center mb-6"><div>
-        <p>This tool is a <em>work in progress</em>. Many skills and units are still missing translation. If you have any questions or feedback, <a href="http://x.com/bychrisgomez" target="_blank" rel="noopener noreferrer">tweet me @bychrisgomez</a>.</p></div>
+        <p>This tool is a <em>work in progress</em>. Many skills and units are still missing translation. If you have any questions or feedback, <a class="text-primary-600 dark:text-primary-400 hover:underline" href="http://x.com/bychrisgomez" target="_blank" rel="noopener noreferrer">tweet me @bychrisgomez</a>.</p></div>
         </div>
         <div class="mb-6">
             <input type="text" id="searchInput" placeholder="Start typing to search for a skill..." class="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-600 dark:focus:ring-primary-400 focus:border-transparent">
@@ -155,24 +155,43 @@
             }
         }
 
-        function displaySkills(filteredSkills) {
-            skillList.innerHTML = '';
-            if (filteredSkills.length > 0) {
-                skillList.classList.remove('hidden');
-                filteredSkills.forEach(skill => {
-                    const skillElement = document.createElement('div');
-                    skillElement.className = 'p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200';
-                    skillElement.textContent = skill.name;
-                    skillElement.onclick = () => {
-                        displaySkillDetails(skill);
-                        skillList.classList.add('hidden');
-                        searchInput.value = '';
-                    };
-                    skillList.appendChild(skillElement);
-                });
-            } else {
-                skillList.classList.add('hidden');
+        function displaySkills(filteredSkills, append = false) {
+            if(!append) {
+                skillList.innerHTML = '';
             }
+            skillsToDisplay.forEach(skill => {
+                const skillElement = document.createElement('div');
+                skillElement.className = 'p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 mb-4';
+
+                const nameElement = document.createElement('h3');
+                nameElement.className = 'text-lg font-semibold text-primary-600 dark:text-primary-400 mb-2';
+                nameElement.textContent = skill.name;
+                skillElement.appendChild(nameElement);
+
+                if(skill.description) {
+                    const descriptionElement = document.createElement('p');
+                    descriptionElement.className = 'text-gray-600 dark:text-gray-300 mb-2';
+                    descriptionElement.textContent = skill.description.length > 100
+                        ? skill.description.substring(0,100) + '...'
+                        : skill.description;
+                    skillElement.appendChild(descriptionElement);
+                }
+
+                const readMoreLink = document.createElement('a');
+                readMoreLink.className = 'text-primary-600 dark:text-primary-400 hover:underline';
+                readMoreLink.textContent = 'Read more';
+                readMoreLink.href = '#';
+                readMoreLink.onclick = (e) => {
+                    e.preventDefault();
+                    displaySkillDetails(skill);
+                    skillList.classList.add('hidden');
+                    searchInput.value = '';
+                };
+                skillElement.appendChild(readMoreLink);
+
+                skillList.insertBefore(skillElement, skillList.lastChild);
+            });
+            skillList.classList.remove('hidden');  
         }
 
         function displaySkillDetails(skill) {
@@ -189,6 +208,7 @@
 
             document.getElementById('backToSearch').addEventListener('click', () => {
                 skillDetails.classList.add('hidden');
+                skillList.classList.remove('hidden');
                 searchInput.focus();
             });
         }
