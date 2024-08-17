@@ -151,6 +151,30 @@
             }
         }
 
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = normalizeString(e.target.value);
+            console.log('Search term:', searchTerm);  // Log the search term
+            if (searchTerm.length > 0) {
+                const filteredSkills = skills.filter(skill => {
+                    if (!skill) {
+                        console.log('Encountered undefined skill');  // Log undefined skills
+                        return false;
+                    }
+                    const nameMatch = normalizeString(skill.name).includes(searchTerm);
+                    const descMatch = normalizeString(skill.description).includes(searchTerm);
+                    const unitMatch = skill.units && skill.units.some(unit => normalizeString(unit).includes(searchTerm));
+                    console.log(`Skill: ${skill.name}, Name match: ${nameMatch}, Desc match: ${descMatch}, Unit match: ${unitMatch}`);  // Log match results
+                    return nameMatch || descMatch || unitMatch;
+                });
+                console.log('Filtered skills:', filteredSkills.slice(0, 5));  // Log first 5 filtered skills
+                displaySkills(filteredSkills);
+                skillDetails.classList.add('hidden');
+            } else {
+                skillList.classList.add('hidden');
+                skillDetails.classList.add('hidden');
+            }
+        });
+
         function displaySkills(skillsToDisplay, append = false) {
             if(!append) {
                 skillList.innerHTML = '';
