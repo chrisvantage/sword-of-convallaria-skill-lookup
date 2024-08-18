@@ -111,30 +111,47 @@
             errorMessage.classList.add('hidden');
             
             try {
+                // check localstorage first
+                const cachedData = localStorage.getItem('skillsData');
+                const cachedTimestamp = localStorage.getItem('skillsDataTimestamp');
+
+                if (cachedData && cachedTimestamp) {
+                    const now = new Date().getTime();
+                    const cacheAge = now - parseInt(cachedTimestamp);
+
+                    // use cache is it's less than 1 hour old
+                    if (cacheAge < 3600000) {
+                        skills = JSON.parse(cachedData);
+                        loadingIndicator.classList.add('hidden');
+                        return;
+                    }
+                }
+                
                 console.log('Fetching skills from API...');
                 const response = await fetch(API_ENDPOINT);
-                console.log('API Response status:', response.status);
+                console.log('API Response status:', response.status)
                 if (!response.ok) {
                     const errorText = await response.text();
                     console.error('API Error response:', errorText);
                     throw new Error(`HTTP error! Status: ${response.status}, Details: ${errorText}`);
                 }
                 const csvData = await response.text();
-                console.log('CSV Data received:', csvData.substring(0, 200) + '...');  // Log first 200 characters
-
+                console.log('CSV Data received:', csvData.substring(0,200) + '...');
+                
                 Papa.parse(csvData, {
                     header: true,
                     complete: (results) => {
-                        console.log('Parsed data:', results.data.slice(0, 5));  // Log first 5 items
-                        skills = results.data.map(row => {
-                            console.log('Processing row:', row);  // Log each row being processed
-                            return {
-                                name: row.name_global || 'Unknown Skill',
-                                description: row.desc_global || 'No description available',
-                                units: (row.unit_global || '').split(',').map(unit => unit.trim()).filter(Boolean)
-                            };
-                        });
-                        console.log('Processed skills:', skills.slice(0, 5));  // Log first 5 processed skills
+                        skills = results.data
+                        .filter(row => row && row.name_global)
+                        .map(row => ({
+                            name: row.name_global,
+                            description: row.desc_global,
+                            units: (row.unit_global || '').split(',').map(unit => unit.trim())
+                        }));
+                        console.log('Processed skills:', skills.slice(0,5));
+                        if (skills.length === 0) {
+                            throw new Error('No valid skills found in the data')
+                        }
                         displaySkills(skills);
                         loadingIndicator.classList.add('hidden');
                     },
@@ -146,7 +163,7 @@
             } catch (error) {
                 console.error('Error fetching skills:', error);
                 loadingIndicator.classList.add('hidden');
-                errorMessage.textContent = `Failed to load skills: ${error.message}. Please try again later.`;
+                errorMessage.textContent = 'Failed to load skills. Please try again later.';
                 errorMessage.classList.remove('hidden');
             }
         }
