@@ -141,18 +141,12 @@
                 Papa.parse(csvData, {
                     header: true,
                     complete: (results) => {
-                        skills = results.data
-                        .filter(row => row && row.name_global)
-                        .map(row => ({
+                        skills = results.data.map(row => ({
                             name: row.name_global,
                             description: row.desc_global,
                             units: (row.unit_global || '').split(',').map(unit => unit.trim())
                         }));
                         console.log('Processed skills:', skills.slice(0,5));
-                        if (skills.length === 0) {
-                            throw new Error('No valid skills found in the data')
-                        }
-                        displaySkills(skills);
                         loadingIndicator.classList.add('hidden');
                     },
                     error: (error) => {
@@ -238,25 +232,17 @@
         }
 
         function normalizeString(str) {
-            if (str === undefined || str === null) {
-                console.warn('Attempted to normalize undefined or null string');
-                return '';
-            }
-            return str.toString().toLowerCase().replace(/[^a-z0-9]/g, '');
+            return str.toLowerCase().replace(/[^a-z0-9]/g, '');
         }
 
         searchInput.addEventListener('input', (e) => {
             const searchTerm = normalizeString(e.target.value);
             if (searchTerm.length > 0) {
-                const filteredSkills = skills.filter(skill => {
-                    if (!skill) {
-                        console.warn('Encountered undefined skill during search');
-                        return false;
-                    }
-                    return  normalizeString(skill.name).includes(searchTerm) || 
-                            normalizeString(skill.description).includes(searchTerm) ||
-                            (Array.isArray(skill.units) && skill.units.some(unit => normalizeString(unit).includes(searchTerm)));
-                });
+                const filteredSkills = skills.filter(skill => 
+                    normalizeString(skill.name).includes(searchTerm) || 
+                    normalizeString(skill.description).includes(searchTerm) ||
+                    skill.units.some(unit => normalizeString(unit).includes(searchTerm))
+                );
                 displaySkills(filteredSkills);
                 skillDetails.classList.add('hidden');
             } else {
