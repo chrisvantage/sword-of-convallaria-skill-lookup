@@ -251,6 +251,26 @@
             return str.toString().toLowerCase().replace(/[^a-z0-9]/g, '');
         }
 
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = normalizeString(e.target.value);
+            if (searchTerm.length > 0) {
+                const filteredSkills = skills.filter(skill => {
+                    if (!skill) {
+                        console.warn('Encountered undefined skill during search');
+                        return false;
+                    }
+                    return  normalizeString(skill.name).includes(searchTerm) || 
+                            normalizeString(skill.description).includes(searchTerm) ||
+                            (Array.isArray(skill.units) && skill.units.some(unit => normalizeString(unit).includes(searchTerm)));
+                });
+                displaySkills(filteredSkills);
+                skillDetails.classList.add('hidden');
+            } else {
+                skillList.classList.add('hidden');
+                skillDetails.classList.add('hidden');
+            }
+        });
+
         darkModeToggle.addEventListener('click', () => {
             document.documentElement.classList.toggle('dark');
         });
