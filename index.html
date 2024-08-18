@@ -109,6 +109,7 @@
         async function fetchSkillsFromGoogleSheets() {
             loadingIndicator.classList.remove('hidden');
             errorMessage.classList.add('hidden');
+            
             try {
                 console.log('Fetching skills from API...');
                 const response = await fetch(API_ENDPOINT);
@@ -119,19 +120,21 @@
                     throw new Error(`HTTP error! Status: ${response.status}, Details: ${errorText}`);
                 }
                 const csvData = await response.text();
-                console.log('Raw CSV Data received:', csvData);  // Log the entire CSV data
+                console.log('CSV Data received:', csvData.substring(0, 200) + '...');  // Log first 200 characters
 
                 Papa.parse(csvData, {
                     header: true,
                     complete: (results) => {
-                        console.log('Parsed data:', results);  // Log the entire parsed results
-                        skills = results.data.map(row => ({
-                            name: row.name_global || 'Unknown Skill',
-                            description: row.desc_global || 'No description available',
-                            units: (row.unit_global || '').split(',').map(unit => unit.trim()).filter(Boolean)
-                        }));
-                        console.log('Processed skills:', skills);  // Log all processed skills
-                        displaySkills(skills);
+                        console.log('Parsed data:', results.data.slice(0, 5));  // Log first 5 items
+                        skills = results.data.map(row => {
+                            console.log('Processing row:', row);  // Log each row being processed
+                            return {
+                                name: row.name_global || 'Unknown Skill',
+                                description: row.desc_global || 'No description available',
+                                units: (row.unit_global || '').split(',').map(unit => unit.trim()).filter(Boolean)
+                            };
+                        });
+                        console.log('Processed skills:', skills.slice(0, 5));  // Log first 5 processed skills
                         loadingIndicator.classList.add('hidden');
                     },
                     error: (error) => {
