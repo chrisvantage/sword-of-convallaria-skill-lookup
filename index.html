@@ -127,16 +127,11 @@
                     }
                 }
                 
-                console.log('Fetching skills from API...');
                 const response = await fetch(API_ENDPOINT);
-                console.log('API Response status:', response.status)
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('API Error response:', errorText);
-                    throw new Error(`HTTP error! Status: ${response.status}, Details: ${errorText}`);
+                    throw new Error(`HTTP error! Status: ${response.status}`);
                 }
                 const csvData = await response.text();
-                console.log('CSV Data received:', csvData.substring(0,200) + '...');
                 
                 Papa.parse(csvData, {
                     header: true,
@@ -144,9 +139,8 @@
                         skills = results.data.map(row => ({
                             name: row.name_global,
                             description: row.desc_global,
-                            units: (row.unit_global || '').split(',').map(unit => unit.trim())
+                            units: row.unit_global.split(',').map(unit => unit.trim())
                         }));
-                        console.log('Processed skills:', skills.slice(0,5));
                         loadingIndicator.classList.add('hidden');
                     },
                     error: (error) => {
