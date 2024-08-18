@@ -1,0 +1,19 @@
+{
+	"geolocation": {
+		"data": {
+			"city": "Miramar",
+			"country": {
+				"code": "US",
+				"name": "United States"
+			},
+			"subdivision": {
+				"code": "FL",
+				"name": "Florida"
+			},
+			"timezone": "America/New_York",
+			"latitude": 25.992,
+			"longitude": -80.2702
+		},
+		"timestamp": 1723932752913
+	}
+}
