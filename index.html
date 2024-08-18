@@ -95,12 +95,7 @@
     </div>
 
     <script>
-<<<<<<< HEAD
         const API_ENDPOINT = location.hostname === "localhost" ? '/.netlify/functions/fetchSkills' : '/api/fetchSkills';
-=======
-        const API_ENDPOINT = '/.netlify/functions/fetchSkills';
-
->>>>>>> parent of fabc448 (Update index.html)
         let skills = [];
         const BATCH_SIZE = 50;
 
@@ -115,7 +110,6 @@
             loadingIndicator.classList.remove('hidden');
             errorMessage.classList.add('hidden');
             try {
-<<<<<<< HEAD
                 console.log('Fetching skills from API...');
                 const response = await fetch(API_ENDPOINT);
                 console.log('API Response status:', response.status);
@@ -124,9 +118,6 @@
                     console.error('API Error response:', errorText);
                     throw new Error(`HTTP error! Status: ${response.status}, Details: ${errorText}`);
                 }
-=======
-                const response = await fetch(API_ENDPOINT);
->>>>>>> parent of fabc448 (Update index.html)
                 const csvData = await response.text();
                 console.log('Raw CSV Data received:', csvData);  // Log the entire CSV data
 
@@ -142,6 +133,10 @@
                         console.log('Processed skills:', skills);  // Log all processed skills
                         displaySkills(skills);
                         loadingIndicator.classList.add('hidden');
+                    },
+                    error: (error) => {
+                        console.error('Papa Parse error:', error);
+                        throw error;
                     }
                 });
             } catch (error) {
