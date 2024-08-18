@@ -152,31 +152,20 @@
 
         searchInput.addEventListener('input', (e) => {
             const searchTerm = normalizeString(e.target.value);
-            console.log('Search term:', searchTerm);
-            console.log('Total skills before filtering:', skills.length);
+            console.log('Search term:', searchTerm);  // Log the search term
             if (searchTerm.length > 0) {
                 const filteredSkills = skills.filter(skill => {
                     if (!skill) {
-                        console.log('Encountered undefined skill');
+                        console.log('Encountered undefined skill');  // Log undefined skills
                         return false;
                     }
-                    const normalizedName = normalizeString(skill.name);
-                    const normalizedDesc = normalizeString(skill.description);
-                    const normalizedUnits = skill.units.map(normalizeString);
-                    
-                    const nameMatch = normalizedName.includes(searchTerm);
-                    const descMatch = normalizedDesc.includes(searchTerm);
-                    const unitMatch = normalizedUnits.some(unit => unit.includes(searchTerm));
-                    
-                    console.log(`Skill: ${skill.name}`);
-                    console.log(`Normalized name: ${normalizedName}, Match: ${nameMatch}`);
-                    console.log(`Normalized description: ${normalizedDesc}, Match: ${descMatch}`);
-                    console.log(`Normalized units: ${normalizedUnits.join(', ')}, Match: ${unitMatch}`);
-                    
+                    const nameMatch = normalizeString(skill.name).includes(searchTerm);
+                    const descMatch = normalizeString(skill.description).includes(searchTerm);
+                    const unitMatch = skill.units && skill.units.some(unit => normalizeString(unit).includes(searchTerm));
+                    console.log(`Skill: ${skill.name}, Name match: ${nameMatch}, Desc match: ${descMatch}, Unit match: ${unitMatch}`);  // Log match results
                     return nameMatch || descMatch || unitMatch;
                 });
-                console.log('Filtered skills:', filteredSkills.slice(0, 5));
-                console.log('Total filtered skills:', filteredSkills.length);
+                console.log('Filtered skills:', filteredSkills.slice(0, 5));  // Log first 5 filtered skills
                 displaySkills(filteredSkills);
                 skillDetails.classList.add('hidden');
             } else {
